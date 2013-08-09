@@ -1,2 +1,3 @@
+-define(queue_name, <<"ping_app_queue">>).
 -define(ping_interval, 15000).
 -define(wait_interval, 16000). % ping_interval + 1 sec.

@@ -1,12 +1,13 @@
-{application, rmq_ping,
- [
-  {description, ""},
-  {vsn, "1"},
-  {registered, []},
-  {applications, [
-                  kernel,
-                  stdlib
-                 ]},
-  {mod, { rmq_ping_app, []}},
-  {env, []}
- ]}.
+{application, rmq_ping, [
+	{description, ""},
+	{vsn, git},
+	{registered, []},
+	{applications, [
+		kernel,
+		stdlib,
+		lager,
+		amqp_client
+	]},
+	{mod, { rmq_ping_app, []}},
+	{env, []}
+]}.

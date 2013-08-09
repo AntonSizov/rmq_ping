@@ -9,18 +9,24 @@
 -export([start_link/0, populate_queue/1]).
 
 %% gen_server exports
--export([init/1,
-         terminate/2,
-         handle_call/3,
-         handle_cast/2,
-         handle_info/2,
-         code_change/3]).
+-export([
+	init/1,
+	terminate/2,
+	handle_call/3,
+	handle_cast/2,
+	handle_info/2,
+	code_change/3
+]).
 
 -record(state, {
-	chan,
-	conn,
-	queue_name
-	}).
+	chan :: pid(),
+	conn :: pid(),
+	queue_name :: binary()
+}).
+
+%% ===================================================================
+%% API
+%% ===================================================================
 
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
@@ -35,10 +41,15 @@ populate_queue(Count) ->
 init([]) ->
 	{ok, AmqpSpec, _Qos} = parse_opts([]),
 	{ok, Conn} = amqp_connection:start(AmqpSpec),
+	link(Conn),
 	{ok, Chan} = amqp_connection:open_channel(Conn),
-	QName = <<"ping_app_queue">>,
+	link(Conn),
+	QName = ?queue_name,
     ok = queue_declare(Chan, QName, false, false, true),
-    {ok, #state{chan=Chan, conn=Conn, queue_name=QName}, 0}.
+    {ok, #state{
+			chan = Chan,
+			conn = Conn,
+			queue_name = QName}, 0}.
 
 terminate(_Reason, _State) ->
     ok.
@@ -53,7 +64,7 @@ handle_cast({populate_queue, Count}, State) ->
 handle_cast(Message, State) ->
 	{stop, {bad_message, Message}, State}.
 
-handle_info(timeout, State) ->	
+handle_info(timeout, State) ->
 	publish_dumb_msg(1, State),
 	lager:info("sent_msg"),
 	{noreply, State, ?ping_interval};
