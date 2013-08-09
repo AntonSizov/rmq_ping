@@ -38,7 +38,9 @@ start_link() ->
 %% -------------------------------------------------------------------------
 
 init([]) ->
-	{ok, AmqpSpec, _Qos} = parse_opts([]),
+	{ok, Host} = application:get_env(rmq_host),
+	{ok, Port} = application:get_env(rmq_port),
+	{ok, AmqpSpec, _Qos} = parse_opts([{host, Host}, {port, Port}]),
 	{ok, Conn} = amqp_connection:start(AmqpSpec),
 	link(Conn),
 	{ok, Chan} = amqp_connection:open_channel(Conn),
